@@ -1,0 +1,42 @@
+{
+  "name": "hyperionkit",
+  "version": "1.1.4",
+  "type": "module",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rollup -c",
+    "demo": "cd demo && npm run dev",
+    "demo:install": "cd demo && npm install",
+    "demo:build": "cd demo && npm run build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "dependencies": {
+    "ethers": "^6.15.0",
+    "lucide-react": "^0.525.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.6",
+    "@rollup/plugin-node-resolve": "^15.3.0",
+    "@rollup/plugin-typescript": "^12.1.4",
+    "@types/react": "^19.1.8",
+    "rollup": "^4.46.2",
+    "rollup-plugin-postcss": "^4.0.2",
+    "tslib": "^2.7.0",
+    "typescript": "^5.8.0"
+  }
+}
