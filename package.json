@@ -12,6 +12,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup -c",
+    "commit": "node version/scripts/parallel-commit.cjs",
     "demo": "cd demo && npm run dev",
     "demo:install": "cd demo && npm install",
     "demo:build": "cd demo && npm run build"
