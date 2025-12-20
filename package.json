@@ -2,11 +2,15 @@
   "name": "hyperkit",
   "version": "1.0.0",
   "type": "module",
-  "description": "",
+  "description": "Multi-chain blockchain SDK with interactive CLI for EVM and Layer 1 blockchains",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "bin": {
+    "hyperkit-sdk": "bin/cli.js"
+  },
   "files": [
     "dist",
+    "bin",
     "README.md"
   ],
   "scripts": {
@@ -17,7 +21,15 @@
     "demo:install": "cd demo && npm install",
     "demo:build": "cd demo && npm run build"
   },
-  "keywords": [],
+  "keywords": [
+    "blockchain",
+    "web3",
+    "metis",
+    "sui",
+    "defi",
+    "cli",
+    "multi-chain"
+  ],
   "author": "",
   "license": "ISC",
   "peerDependencies": {
@@ -28,7 +40,10 @@
     "ethers": "^6.15.0",
     "lucide-react": "^0.525.0",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "inquirer": "^9.2.12",
+    "chalk": "^5.3.0",
+    "ora": "^8.0.1"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^28.0.6",

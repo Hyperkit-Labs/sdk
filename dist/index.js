@@ -101,7 +101,7 @@ function requireReactJsxRuntime_development () {
 	          case REACT_PORTAL_TYPE:
 	            return "Portal";
 	          case REACT_CONTEXT_TYPE:
-	            return (type.displayName || "Context") + ".Provider";
+	            return type.displayName || "Context";
 	          case REACT_CONSUMER_TYPE:
 	            return (type._context.displayName || "Context") + ".Consumer";
 	          case REACT_FORWARD_REF_TYPE:
@@ -208,17 +208,8 @@ function requireReactJsxRuntime_development () {
 	      componentName = this.props.ref;
 	      return void 0 !== componentName ? componentName : null;
 	    }
-	    function ReactElement(
-	      type,
-	      key,
-	      self,
-	      source,
-	      owner,
-	      props,
-	      debugStack,
-	      debugTask
-	    ) {
-	      self = props.ref;
+	    function ReactElement(type, key, props, owner, debugStack, debugTask) {
+	      var refProp = props.ref;
 	      type = {
 	        $$typeof: REACT_ELEMENT_TYPE,
 	        type: type,
@@ -226,7 +217,7 @@ function requireReactJsxRuntime_development () {
 	        props: props,
 	        _owner: owner
 	      };
-	      null !== (void 0 !== self ? self : null)
+	      null !== (void 0 !== refProp ? refProp : null)
 	        ? Object.defineProperty(type, "ref", {
 	            enumerable: false,
 	            get: elementRefGetterWithDeprecationWarning
@@ -265,8 +256,6 @@ function requireReactJsxRuntime_development () {
 	      config,
 	      maybeKey,
 	      isStaticChildren,
-	      source,
-	      self,
 	      debugStack,
 	      debugTask
 	    ) {
@@ -327,28 +316,38 @@ function requireReactJsxRuntime_development () {
 	      return ReactElement(
 	        type,
 	        children,
-	        self,
-	        source,
-	        getOwner(),
 	        maybeKey,
+	        getOwner(),
 	        debugStack,
 	        debugTask
 	      );
 	    }
 	    function validateChildKeys(node) {
-	      "object" === typeof node &&
-	        null !== node &&
-	        node.$$typeof === REACT_ELEMENT_TYPE &&
-	        node._store &&
-	        (node._store.validated = 1);
+	      isValidElement(node)
+	        ? node._store && (node._store.validated = 1)
+	        : "object" === typeof node &&
+	          null !== node &&
+	          node.$$typeof === REACT_LAZY_TYPE &&
+	          ("fulfilled" === node._payload.status
+	            ? isValidElement(node._payload.value) &&
+	              node._payload.value._store &&
+	              (node._payload.value._store.validated = 1)
+	            : node._store && (node._store.validated = 1));
+	    }
+	    function isValidElement(object) {
+	      return (
+	        "object" === typeof object &&
+	        null !== object &&
+	        object.$$typeof === REACT_ELEMENT_TYPE
+	      );
 	    }
 	    var React$1 = React,
 	      REACT_ELEMENT_TYPE = Symbol.for("react.transitional.element"),
 	      REACT_PORTAL_TYPE = Symbol.for("react.portal"),
 	      REACT_FRAGMENT_TYPE = Symbol.for("react.fragment"),
 	      REACT_STRICT_MODE_TYPE = Symbol.for("react.strict_mode"),
-	      REACT_PROFILER_TYPE = Symbol.for("react.profiler");
-	    var REACT_CONSUMER_TYPE = Symbol.for("react.consumer"),
+	      REACT_PROFILER_TYPE = Symbol.for("react.profiler"),
+	      REACT_CONSUMER_TYPE = Symbol.for("react.consumer"),
 	      REACT_CONTEXT_TYPE = Symbol.for("react.context"),
 	      REACT_FORWARD_REF_TYPE = Symbol.for("react.forward_ref"),
 	      REACT_SUSPENSE_TYPE = Symbol.for("react.suspense"),
@@ -367,20 +366,20 @@ function requireReactJsxRuntime_development () {
 	            return null;
 	          };
 	    React$1 = {
-	      "react-stack-bottom-frame": function (callStackForError) {
+	      react_stack_bottom_frame: function (callStackForError) {
 	        return callStackForError();
 	      }
 	    };
 	    var specialPropKeyWarningShown;
 	    var didWarnAboutElementRef = {};
-	    var unknownOwnerDebugStack = React$1["react-stack-bottom-frame"].bind(
+	    var unknownOwnerDebugStack = React$1.react_stack_bottom_frame.bind(
 	      React$1,
 	      UnknownOwner
 	    )();
 	    var unknownOwnerDebugTask = createTask(getTaskName(UnknownOwner));
 	    var didWarnAboutKeySpread = {};
 	    reactJsxRuntime_development.Fragment = REACT_FRAGMENT_TYPE;
-	    reactJsxRuntime_development.jsx = function (type, config, maybeKey, source, self) {
+	    reactJsxRuntime_development.jsx = function (type, config, maybeKey) {
 	      var trackActualOwner =
 	        1e4 > ReactSharedInternals.recentlyCreatedOwnerStacks++;
 	      return jsxDEVImpl(
@@ -388,15 +387,13 @@ function requireReactJsxRuntime_development () {
 	        config,
 	        maybeKey,
 	        false,
-	        source,
-	        self,
 	        trackActualOwner
 	          ? Error("react-stack-top-frame")
 	          : unknownOwnerDebugStack,
 	        trackActualOwner ? createTask(getTaskName(type)) : unknownOwnerDebugTask
 	      );
 	    };
-	    reactJsxRuntime_development.jsxs = function (type, config, maybeKey, source, self) {
+	    reactJsxRuntime_development.jsxs = function (type, config, maybeKey) {
 	      var trackActualOwner =
 	        1e4 > ReactSharedInternals.recentlyCreatedOwnerStacks++;
 	      return jsxDEVImpl(
@@ -404,8 +401,6 @@ function requireReactJsxRuntime_development () {
 	        config,
 	        maybeKey,
 	        true,
-	        source,
-	        self,
 	        trackActualOwner
 	          ? Error("react-stack-top-frame")
 	          : unknownOwnerDebugStack,
@@ -436,7 +431,7 @@ var jsxRuntimeExports = requireJsxRuntime();
 /**
  *  The current version of Ethers.
  */
-const version = "6.15.0";
+const version = "6.16.0";
 
 /**
  *  Property helper functions.
@@ -727,7 +722,8 @@ function _getBytes(value, name, copy) {
         }
         return value;
     }
-    if (typeof (value) === "string" && value.match(/^0x(?:[0-9a-f][0-9a-f])*$/i)) {
+    if (typeof (value) === "string" && (value.length % 2) === 0 &&
+        value.match(/^0x[0-9a-f]*$/i)) {
         const result = new Uint8Array((value.length - 2) / 2);
         let offset = 2;
         for (let i = 0; i < result.length; i++) {
@@ -1036,6 +1032,10 @@ function toBeHex(_value, _width) {
     }
     else {
         const width = getNumber(_width, "width");
+        // Special case when both value and width are 0 (see: #5025)
+        if (width === 0 && value === BN_0$9) {
+            return "0x";
+        }
         assert(width * 2 >= result.length, `value exceeds width (${width} bytes)`, "NUMERIC_FAULT", {
             operation: "toBeHex",
             fault: "overflow",
@@ -1051,10 +1051,11 @@ function toBeHex(_value, _width) {
 /**
  *  Converts %%value%% to a Big Endian Uint8Array.
  */
-function toBeArray(_value) {
+function toBeArray(_value, _width) {
     const value = getUint(_value, "value");
     if (value === BN_0$9) {
-        return new Uint8Array([]);
+        const width = 0;
+        return new Uint8Array(width);
     }
     let hex = value.toString(16);
     if (hex.length % 2) {
@@ -6067,6 +6068,9 @@ const BN_2$2 = BigInt(2);
 const BN_27$1 = BigInt(27);
 const BN_28$1 = BigInt(28);
 const BN_35$1 = BigInt(35);
+const BN_N = BigInt("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
+const BN_N_2 = BN_N / BN_2$2; // Must be integer (floor) division; do NOT shifts
+const inspect$1 = Symbol.for("nodejs.util.inspect.custom");
 const _guard$1 = {};
 function toUint256(value) {
     return zeroPadValue(toBeArray(value), 32);
@@ -6117,7 +6121,8 @@ class Signature {
      *  Returns true if the Signature is valid for [[link-eip-2]] signatures.
      */
     isValid() {
-        return (parseInt(this.#s.substring(0, 3)) < 8);
+        const s = BigInt(this.#s);
+        return (s <= BN_N_2);
     }
     /**
      *  The ``v`` value for a signature.
@@ -6193,8 +6198,26 @@ class Signature {
         this.#v = v;
         this.#networkV = null;
     }
-    [Symbol.for('nodejs.util.inspect.custom')]() {
-        return `Signature { r: "${this.r}", s: "${this._s}"${this.isValid() ? "" : ', valid: "false"'}, yParity: ${this.yParity}, networkV: ${this.networkV} }`;
+    /**
+     *  Returns the canonical signature.
+     *
+     *  This is only necessary when dealing with legacy transaction which
+     *  did not enforce canonical S values (i.e. [[link-eip-2]]. Most
+     *  developers should never require this.
+     */
+    getCanonical() {
+        if (this.isValid()) {
+            return this;
+        }
+        // Compute the canonical signature; s' = N - s, v = !v
+        const s = BN_N - BigInt(this._s);
+        const v = (55 - this.v);
+        const result = new Signature(_guard$1, this.r, toUint256(s), v);
+        // Populate the networkV if necessary
+        if (this.networkV) {
+            result.#networkV = this.networkV;
+        }
+        return result;
     }
     /**
      *  Returns a new identical [[Signature]].
@@ -6216,6 +6239,15 @@ class Signature {
             networkV: ((networkV != null) ? networkV.toString() : null),
             r: this.r, s: this._s, v: this.v,
         };
+    }
+    [inspect$1]() {
+        return this.toString();
+    }
+    toString() {
+        if (this.isValid()) {
+            return `Signature { r: ${this.r}, s: ${this._s}, v: ${this.v} }`;
+        }
+        return `Signature { r: ${this.r}, s: ${this._s}, v: ${this.v}, valid: false }`;
     }
     /**
      *  Compute the chain ID from the ``v`` in a legacy EIP-155 transactions.
@@ -7867,7 +7899,9 @@ const BN_27 = BigInt(27);
 const BN_28 = BigInt(28);
 const BN_35 = BigInt(35);
 const BN_MAX_UINT = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+const inspect = Symbol.for("nodejs.util.inspect.custom");
 const BLOB_SIZE = 4096 * 32;
+const CELL_COUNT = 128;
 function getKzgLibrary(kzg) {
     const blobToKzgCommitment = (blob) => {
         if ("computeBlobProof" in kzg) {
@@ -7991,7 +8025,7 @@ function formatAuthorizationList(value) {
             formatNumber(a.nonce, "nonce"),
             formatNumber(a.signature.yParity, "yParity"),
             toBeArray(a.signature.r),
-            toBeArray(a.signature.s)
+            toBeArray(a.signature._s)
         ];
     });
 }
@@ -8092,7 +8126,7 @@ function _serializeLegacy(tx, sig) {
     // Add the signature
     fields.push(toBeArray(v));
     fields.push(toBeArray(sig.r));
-    fields.push(toBeArray(sig.s));
+    fields.push(toBeArray(sig._s));
     return encodeRlp(fields);
 }
 function _parseEipSignature(tx, fields) {
@@ -8197,9 +8231,11 @@ function _serializeEip2930(tx, sig) {
 function _parseEip4844(data) {
     let fields = decodeRlp(getBytes(data).slice(1));
     let typeName = "3";
+    let blobWrapperVersion = null;
     let blobs = null;
     // Parse the network format
     if (fields.length === 4 && Array.isArray(fields[0])) {
+        // EIP-4844 format with sidecar
         typeName = "3 (network format)";
         const fBlobs = fields[1], fCommits = fields[2], fProofs = fields[3];
         assertArgument(Array.isArray(fBlobs), "invalid network format: blobs not an array", "fields[1]", fBlobs);
@@ -8213,6 +8249,31 @@ function _parseEip4844(data) {
                 data: fBlobs[i],
                 commitment: fCommits[i],
                 proof: fProofs[i],
+            });
+        }
+        fields = fields[0];
+    }
+    else if (fields.length === 5 && Array.isArray(fields[0])) {
+        // EIP-7594 format with sidecar
+        typeName = "3 (EIP-7594 network format)";
+        blobWrapperVersion = getNumber(fields[1]);
+        const fBlobs = fields[2], fCommits = fields[3], fProofs = fields[4];
+        assertArgument(blobWrapperVersion === 1, `unsupported EIP-7594 network format version: ${blobWrapperVersion}`, "fields[1]", blobWrapperVersion);
+        assertArgument(Array.isArray(fBlobs), "invalid EIP-7594 network format: blobs not an array", "fields[2]", fBlobs);
+        assertArgument(Array.isArray(fCommits), "invalid EIP-7594 network format: commitments not an array", "fields[3]", fCommits);
+        assertArgument(Array.isArray(fProofs), "invalid EIP-7594 network format: proofs not an array", "fields[4]", fProofs);
+        assertArgument(fBlobs.length === fCommits.length, "invalid network format: blobs/commitments length mismatch", "fields", fields);
+        assertArgument(fBlobs.length * CELL_COUNT === fProofs.length, "invalid network format: blobs/proofs length mismatch", "fields", fields);
+        blobs = [];
+        for (let i = 0; i < fBlobs.length; i++) {
+            const proof = [];
+            for (let j = 0; j < CELL_COUNT; j++) {
+                proof.push(fProofs[(i * CELL_COUNT) + j]);
+            }
+            blobs.push({
+                data: fBlobs[i],
+                commitment: fCommits[i],
+                proof: concat(proof)
             });
         }
         fields = fields[0];
@@ -8231,7 +8292,8 @@ function _parseEip4844(data) {
         data: hexlify(fields[7]),
         accessList: handleAccessList(fields[8], "accessList"),
         maxFeePerBlobGas: handleUint(fields[9], "maxFeePerBlobGas"),
-        blobVersionedHashes: fields[10]
+        blobVersionedHashes: fields[10],
+        blobWrapperVersion
     };
     if (blobs) {
         tx.blobs = blobs;
@@ -8271,6 +8333,29 @@ function _serializeEip4844(tx, sig, blobs) {
         fields.push(toBeArray(sig.s));
         // We have blobs; return the network wrapped format
         if (blobs) {
+            // Use EIP-7594
+            if (tx.blobWrapperVersion != null) {
+                const wrapperVersion = toBeArray(tx.blobWrapperVersion);
+                const cellProofs = [];
+                for (const { proof } of blobs) {
+                    const p = getBytes(proof);
+                    const cellSize = p.length / CELL_COUNT;
+                    for (let i = 0; i < p.length; i += cellSize) {
+                        cellProofs.push(p.subarray(i, i + cellSize));
+                    }
+                }
+                return concat([
+                    "0x03",
+                    encodeRlp([
+                        fields,
+                        wrapperVersion,
+                        blobs.map((b) => b.data),
+                        blobs.map((b) => b.commitment),
+                        cellProofs
+                    ])
+                ]);
+            }
+            // Fall back onto classic EIP-4844 behavior
             return concat([
                 "0x03",
                 encodeRlp([
@@ -8359,6 +8444,7 @@ class Transaction {
     #kzg;
     #blobs;
     #auths;
+    #blobWrapperVersion;
     /**
      *  The transaction type.
      *
@@ -8511,6 +8597,21 @@ class Transaction {
     set signature(value) {
         this.#sig = (value == null) ? null : Signature.from(value);
     }
+    isValid() {
+        const sig = this.signature;
+        if (sig && !sig.isValid()) {
+            return false;
+        }
+        const auths = this.authorizationList;
+        if (auths) {
+            for (const auth of auths) {
+                if (!auth.signature.isValid()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
     /**
      *  The access list.
      *
@@ -8646,13 +8747,11 @@ class Transaction {
                 versionedHashes.push(getVersionedHash(1, commit));
             }
             else {
-                const commit = hexlify(blob.commitment);
-                blobs.push({
-                    data: hexlify(blob.data),
-                    commitment: commit,
-                    proof: hexlify(blob.proof)
-                });
-                versionedHashes.push(getVersionedHash(1, commit));
+                const data = hexlify(blob.data);
+                const commitment = hexlify(blob.commitment);
+                const proof = hexlify(blob.proof);
+                blobs.push({ data, commitment, proof });
+                versionedHashes.push(getVersionedHash(1, commitment));
             }
         }
         this.#blobs = blobs;
@@ -8666,6 +8765,12 @@ class Transaction {
         else {
             this.#kzg = getKzgLibrary(kzg);
         }
+    }
+    get blobWrapperVersion() {
+        return this.#blobWrapperVersion;
+    }
+    set blobWrapperVersion(value) {
+        this.#blobWrapperVersion = value;
     }
     /**
      *  Creates a new Transaction with default values.
@@ -8688,6 +8793,7 @@ class Transaction {
         this.#kzg = null;
         this.#blobs = null;
         this.#auths = null;
+        this.#blobWrapperVersion = null;
     }
     /**
      *  The transaction hash, if signed. Otherwise, ``null``.
@@ -8714,7 +8820,7 @@ class Transaction {
         if (this.signature == null) {
             return null;
         }
-        return recoverAddress(this.unsignedHash, this.signature);
+        return recoverAddress(this.unsignedHash, this.signature.getCanonical());
     }
     /**
      *  The public key of the sender, if signed. Otherwise, ``null``.
@@ -8723,7 +8829,7 @@ class Transaction {
         if (this.signature == null) {
             return null;
         }
-        return SigningKey.recoverPublicKey(this.unsignedHash, this.signature);
+        return SigningKey.recoverPublicKey(this.unsignedHash, this.signature.getCanonical());
     }
     /**
      *  Returns true if signed.
@@ -8910,6 +9016,56 @@ class Transaction {
             accessList: this.accessList
         };
     }
+    [inspect]() {
+        return this.toString();
+    }
+    toString() {
+        const output = [];
+        const add = (key) => {
+            let value = this[key];
+            if (typeof (value) === "string") {
+                value = JSON.stringify(value);
+            }
+            output.push(`${key}: ${value}`);
+        };
+        if (this.type) {
+            add("type");
+        }
+        add("to");
+        add("data");
+        add("nonce");
+        add("gasLimit");
+        add("value");
+        if (this.chainId != null) {
+            add("chainId");
+        }
+        if (this.signature) {
+            add("from");
+            output.push(`signature: ${this.signature.toString()}`);
+        }
+        // @TODO: accessList
+        // @TODO: blobs (might make output huge; maybe just include a flag?)
+        const auths = this.authorizationList;
+        if (auths) {
+            const outputAuths = [];
+            for (const auth of auths) {
+                const o = [];
+                o.push(`address: ${JSON.stringify(auth.address)}`);
+                if (auth.nonce != null) {
+                    o.push(`nonce: ${auth.nonce}`);
+                }
+                if (auth.chainId != null) {
+                    o.push(`chainId: ${auth.chainId}`);
+                }
+                if (auth.signature) {
+                    o.push(`signature: ${auth.signature.toString()}`);
+                }
+                outputAuths.push(`Authorization { ${o.join(", ")} }`);
+            }
+            output.push(`authorizations: [ ${outputAuths.join(", ")} ]`);
+        }
+        return `Transaction { ${output.join(", ")} }`;
+    }
     /**
      *  Create a **Transaction** from a serialized transaction or a
      *  Transaction-like object.
@@ -8982,6 +9138,9 @@ class Transaction {
         // require the library in the event raw blob data is provided.
         if (tx.kzg != null) {
             result.kzg = tx.kzg;
+        }
+        if (tx.blobWrapperVersion != null) {
+            result.blobWrapperVersion = tx.blobWrapperVersion;
         }
         if (tx.blobs != null) {
             result.blobs = tx.blobs;
@@ -13384,6 +13543,9 @@ function copyRequest(req) {
     if ("kzg" in req) {
         result.kzg = req.kzg;
     }
+    if ("blobWrapperVersion" in req) {
+        result.blobWrapperVersion = req.blobWrapperVersion;
+    }
     if ("blobs" in req && req.blobs) {
         result.blobs = req.blobs.map((b) => {
             if (isBytesLike(b)) {
@@ -15244,7 +15406,7 @@ class BaseContract {
      *  The target to connect to.
      *
      *  This can be an address, ENS name or any [[Addressable]], such as
-     *  another contract. To get the resovled address, use the ``getAddress``
+     *  another contract. To get the resolved address, use the ``getAddress``
      *  method.
      */
     target;
@@ -15419,7 +15581,7 @@ class BaseContract {
      *  resolve immediately if already deployed.
      */
     async waitForDeployment() {
-        // We have the deployement transaction; just use that (throws if deployement fails)
+        // We have the deployment transaction; just use that (throws if deployment fails)
         const deployTx = this.deploymentTransaction();
         if (deployTx) {
             await deployTx.wait();
@@ -15461,7 +15623,7 @@ class BaseContract {
     /**
      *  Return the function for a given name. This is useful when a contract
      *  method name conflicts with a JavaScript name such as ``prototype`` or
-     *  when using a Contract programatically.
+     *  when using a Contract programmatically.
      */
     getFunction(key) {
         if (typeof (key) !== "string") {
@@ -15473,7 +15635,7 @@ class BaseContract {
     /**
      *  Return the event for a given name. This is useful when a contract
      *  event name conflicts with a JavaScript name such as ``prototype`` or
-     *  when using a Contract programatically.
+     *  when using a Contract programmatically.
      */
     getEvent(key) {
         if (typeof (key) !== "string") {
@@ -16962,6 +17124,8 @@ function injectCommonNetworks() {
     registerEth("base-sepolia", 84532, {});
     registerEth("bnb", 56, { ensNetwork: 1 });
     registerEth("bnbt", 97, {});
+    registerEth("filecoin", 314, {});
+    registerEth("filecoin-calibration", 314159, {});
     registerEth("linea", 59144, { ensNetwork: 1 });
     registerEth("linea-goerli", 59140, {});
     registerEth("linea-sepolia", 59141, {});
@@ -18656,7 +18820,7 @@ function parseOffchainLookup(data) {
 
 /**
  *  Generally the [[Wallet]] and [[JsonRpcSigner]] and their sub-classes
- *  are sufficent for most developers, but this is provided to
+ *  are sufficient for most developers, but this is provided to
  *  fascilitate more complex Signers.
  *
  *  @_section: api/providers/abstract-signer: Subclassing Signer [abstract-signer]
